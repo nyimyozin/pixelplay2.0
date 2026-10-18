@@ -1,4 +1,4 @@
-# PixelPlay 2.0
+# [PixelPlay 2.0](https://github.com/nyimyozin/pixelplay2.0)
 
 A polished, self-contained mini-game arcade rebuilt from [the original PixelPlay](https://github.com/nyimyozin/pixelplay).
 
