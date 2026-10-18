@@ -26,6 +26,10 @@
 - Per-game top-20 leaderboards, public player names, personal bests and separate difficulty boards.
 - Static hosting works on GitHub Pages, and deep links use URL fragments.
 
+## Gameplay and quality of life
+
+Action games wait for Play and support pause/resume. Snake progresses to a full grid; Block Drop, Sky Hop, Breakout, Simon and 2048 support longer runs. Updated rules have separate leaderboard modes, preserving previous records. See [the full 24-game review](GAMEPLAY.md).
+
 ## Global leaderboards
 
 The interface and game integrations are included. To activate shared online rankings, follow [the Supabase setup guide](supabase/README.md) and fill in `leaderboard-config.js`. Games remain playable while the service is unconfigured.
@@ -73,4 +77,5 @@ The GitHub Actions validation workflow automatically runs syntax checks and unit
 - `arcade/styles.css`: game tiles, boards, touch controls and responsive styles
 
 The original [PixelPlay](https://github.com/nyimyozin/pixelplay) remains unchanged. PixelPlay 2.0 is a separate redesign.
+
 

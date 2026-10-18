@@ -16,7 +16,7 @@ async function identity(){
 function button(text,handler){const b=document.createElement("button");b.type="button";b.className="btn ghost";b.textContent=text;b.addEventListener("click",handler);return b}
 function text(tag,value){const el=document.createElement(tag);el.textContent=value;return el}
 function readName(){try{return localStorage.getItem("pixelplay2.playerName")||""}catch{return ""}}
-function show(game="hangman",mode="standard",entry=null){
+function show(game="hangman",mode=null,entry=null){
  const previous=document.querySelector("#leaderboardDialog");if(previous)previous.close();
  const modal=document.createElement("dialog");modal.id="leaderboardDialog";modal.className="leaderboard-dialog glass";modal.setAttribute("aria-labelledby","leaderboardTitle");
  const heading=text("h2","Global leaderboards");heading.id="leaderboardTitle";modal.append(heading);
@@ -27,7 +27,7 @@ function show(game="hangman",mode="standard",entry=null){
  const modeLabel=text("label","Difficulty "),modes=document.createElement("select");modes.className="select";modeLabel.append(modes);controls.append(gameLabel,modeLabel);modal.append(controls);
  const rule=text("p",""),state=text("p",""),list=document.createElement("div");state.setAttribute("role","status");list.className="leaderboard-list";modal.append(rule,state,list);
  let generation=0;
- function setModes(){modes.replaceChildren();const separate=["hangman","memory"].includes(games.value);for(const value of separate?["easy","medium","hard"]:["standard"]){const o=text("option",value[0].toUpperCase()+value.slice(1));o.value=value;modes.append(o)}modeLabel.hidden=!separate;if([...modes.options].some(o=>o.value===mode))modes.value=mode}
+ function setModes(){modes.replaceChildren();const available=R.modes(games.value);modeLabel.textContent=["hangman","memory"].includes(games.value)?"Difficulty ":"Mode ";modeLabel.append(modes);for(const item of available){const option=text("option",item.label);option.value=item.value;modes.append(option)}modeLabel.hidden=available.length===1;modes.value=available.some(item=>item.value===mode)?mode:available[0].value}
  async function load(){
   const token=++generation,r=R.rules(games.value);list.replaceChildren();rule.textContent=(r.ascending?"Lowest ":"Highest ")+r.unit+" wins. Ties: faster completion, then earliest record. One best result per player."+(r.winsOnly?" Only wins qualify.":" Completed rounds qualify, including losses.");state.textContent="Loading rankings…";
   try{const response=await database().rpc("pixelplay_top",{p_game:games.value,p_mode:modes.value});if(response.error)throw response.error;if(token!==generation||!modal.open)return;
@@ -36,7 +36,7 @@ function show(game="hangman",mode="standard",entry=null){
    rows.forEach((row,i)=>{const tr=document.createElement("tr");[i+1,row.player_name,Number(row.score).toLocaleString(),(row.duration_ms/1000).toFixed(2)+"s"].forEach(v=>tr.append(text("td",v)));body.append(tr)});table.append(body);list.append(table);
   }catch(e){if(token===generation&&modal.open)state.textContent=e.message||"Unable to load rankings. Try again."}
  }
- games.addEventListener("change",()=>{mode="standard";setModes();load()});modes.addEventListener("change",load);controls.append(button("Refresh",load));setModes();
+ games.addEventListener("change",()=>{mode=null;setModes();load()});modes.addEventListener("change",load);controls.append(button("Refresh",load));setModes();
  if(entry){
   const form=document.createElement("form");form.className="leaderboard-submit";const label=text("label","Your public player name "),name=document.createElement("input");name.required=true;name.minLength=2;name.maxLength=24;name.autocomplete="nickname";name.value=readName();label.append(name);const submit=text("button","Submit result");submit.className="btn primary";submit.type="submit";const status=text("p","");status.setAttribute("role","status");
   form.append(text("h3","Your result: "+entry.score+" "+R.rules(entry.game_id).unit),label,submit,text("p","Your name and best result will be public. A guest identity is saved on this browser; clearing browser data creates a new player."),status);
@@ -53,3 +53,4 @@ function show(game="hangman",mode="standard",entry=null){
 function offer(container,entry,game="hangman",mode="standard"){if(container)container.append(button(entry?"🏆 Submit & view leaderboard":"🏆 View leaderboard",()=>show(entry?.game_id||game,entry?.mode||mode,entry)))}
 window.PixelLeaderboard={show,offer,result:R.result};
 })();
+

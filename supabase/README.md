@@ -9,13 +9,17 @@ The game code is ready; shared rankings stay in a clear "not connected" state un
 5. Commit the config file and wait for GitHub Pages to deploy.
 6. Open the site in two browser profiles. Finish a game, click **Submit & view leaderboard**, enter a name and submit. In the other profile, open **Leaderboards**, select the same game and difficulty, and click **Refresh**. The result should appear in both.
 
+## Existing installations
+
+Projects created with the original leaderboard schema should apply `supabase/qol-update.sql` once before deploying the updated games. Fresh projects should run only `supabase/leaderboards.sql`, which already includes all current modes. The connected PixelPlay project has already received this update. Old records are preserved in their original `standard` boards.
+
 ## Ranking rules
 
 Each player has one personal best per game and difficulty. Higher scores win for point-based games. Lower moves, mistakes, reaction time or completion time win for the other games. Equal scores use faster round completion, followed by the earliest record. Boards show the top 20 players. Hangman and Memory have separate Easy, Medium and Hard boards.
 
 Only wins qualify for Hangman, Memory, Minesweeper, Tic-Tac-Toe, Connect Four, Sudoku, 15 Puzzle, Lights Out, Reaction Time and Number Hunt. Other games accept completed rounds, including losses, so a new high score can count even when the game ends in a crash. Simon ranks fully completed levels. Typing ranks WPM from completed sentences.
 
-Times start when a new round is created. Reaction Time ranks the time from the green light, and Memory uses its existing active-play clock (excluding pauses, with one-second precision). Changing games or restarting does not submit an unfinished round. Submitting is always optional.
+For games with a Play screen, times start when Play is pressed. Pause time is excluded from these runs; hiding the tab or losing focus automatically pauses them. Other round times start when the board is created. Reaction Time ranks the time from the green light, and Memory uses its active-play clock (excluding pauses, with millisecond precision). Changing games or restarting does not submit an unfinished round. Submitting is always optional.
 
 ## Data and security
 
@@ -31,3 +35,4 @@ Times start when a new round is created. Reaction Time ranks the time from the g
 Run `node --test tests/*.test.cjs` and syntax checks as in the main README. The automated suite mocks Supabase to test UI reads, result submissions, error recovery and unconfigured behavior. A live database and two-browser smoke test are still required after connection.
 
 Supabase reference: https://supabase.com/docs/guides/auth/auth-anonymous and https://supabase.com/docs/guides/database/functions
+

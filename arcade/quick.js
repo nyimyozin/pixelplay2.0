@@ -12,40 +12,48 @@ function rps(ctx){
 function simon(ctx){
  let sequence=[],step=0,accept=false,level=0;
  const labels=["Violet","Coral","Mint","Sky"];
- ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Level <b id="simonLevel">1 / 5</b></span><span>Repeat the pattern</span></div><div class="simon-grid" id="simonBoard">'+labels.map((l,i)=>'<button class="simon-pad simon-'+i+'" data-i="'+i+'" type="button" aria-label="'+l+'"></button>').join("")+'</div><button type="button" class="btn ghost" id="simonRepeat">Replay sequence</button>'+resultStatus("Watch the colors, then tap them in the same order.")+'</div>');
+ ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Level <b id="simonLevel">1</b></span><span>Repeat the pattern</span></div><div class="simon-grid" id="simonBoard">'+labels.map((l,i)=>'<button class="simon-pad simon-'+i+'" data-i="'+i+'" type="button" aria-label="'+l+'"></button>').join("")+'</div><button type="button" class="btn ghost" id="simonRepeat">Replay (practice)</button>'+resultStatus("Watch the colors, then tap them in the same order.")+'</div>');
  const pads=$$(ctx,".simon-pad");
  function flash(i){pads[i].classList.add("lit");ctx.after(()=>pads[i].classList.remove("lit"),370)}
  function playback(){accept=false;step=0;ctx.notice("Watch the pattern…");sequence.forEach((v,i)=>ctx.after(()=>flash(v),550+i*700));ctx.after(()=>{accept=true;ctx.notice("Your turn — repeat "+sequence.length+" colors!")},550+sequence.length*700)}
- function advance(){if(ctx.finished)return;sequence.push(Math.floor(Math.random()*4));level=sequence.length;$(ctx,"#simonLevel").textContent=level+" / 5";ctx.after(playback,500)}
- pads.forEach((pad,i)=>ctx.on(pad,"click",()=>{if(!accept||ctx.finished)return;flash(i);if(i!==sequence[step]){accept=false;ctx.finish(false,"Wrong sequence","You reached level "+level+". Keep practicing!",Math.max(0,level-(step===sequence.length?0:1)));return}step++;if(step===sequence.length){accept=false;if(level===5)ctx.finish(true,"Perfect memory!","You remembered all five sequences.",Math.max(0,level-(step===sequence.length?0:1)));else{ctx.notice("Correct! Next level…");advance()}}}));
- ctx.on($(ctx,"#simonRepeat"),"click",()=>{if(accept){accept=false;playback()}});
+ function advance(){if(ctx.finished)return;sequence.push(Math.floor(Math.random()*4));level=sequence.length;$(ctx,"#simonLevel").textContent=level;ctx.after(playback,500)}
+ pads.forEach((pad,i)=>ctx.on(pad,"click",()=>{if(!accept||ctx.finished)return;flash(i);if(i!==sequence[step]){accept=false;ctx.finish(false,"Wrong sequence","You reached level "+level+". Keep practicing!",Math.max(0,level-(step===sequence.length?0:1)));return}step++;if(step===sequence.length){accept=false;ctx.notice("Correct! Next level…");advance()}}));
+ ctx.on($(ctx,"#simonRepeat"),"click",()=>{if(accept){ctx.ranked=false;accept=false;playback();$(ctx,"#simonRepeat").textContent="Replay (practice run)"}});
+ ctx.setEndRun(()=>ctx.finish(false,"Sequence saved","You completed "+Math.max(0,level-1)+" levels.",Math.max(0,level-1)));
  advance();
 }
 function reaction(ctx){
  let state="idle",readyAt=0;
  ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Challenge <b>Reflex</b></span><span>Unit <b>milliseconds</b></span></div><button class="reaction-pad" type="button" id="reactionPad"><strong id="reactionTitle">Ready?</strong><span id="reactionDesc">Tap to start</span></button>'+resultStatus("Wait for green — then tap as fast as possible.")+'</div>');
+ ctx.on(document,"visibilitychange",()=>{if(document.hidden&&(state==="waiting"||state==="ready")){state="done";ctx.finish(false,"Trial cancelled","The page was hidden during the trial. Start again when you are ready.",null)}});
  const pad=$(ctx,"#reactionPad"),title=$(ctx,"#reactionTitle"),desc=$(ctx,"#reactionDesc");
- ctx.on(pad,"click",()=>{if(ctx.finished)return;if(state==="idle"){state="waiting";pad.className="reaction-pad waiting";title.textContent="Wait for it…";desc.textContent="Don't tap yet";ctx.after(()=>{state="ready";readyAt=performance.now();pad.className="reaction-pad go";title.textContent="TAP!";desc.textContent="Now!"},1400+Math.random()*2300)}else if(state==="waiting"){state="done";pad.className="reaction-pad";ctx.finish(false,"Too soon!","You tapped before the light turned green.",null)}else if(state==="ready"){state="done";const ms=Math.round(performance.now()-readyAt);pad.className="reaction-pad go";title.textContent=ms+"ms";ctx.finish(true,ms<250?"Lightning fast!":"Reaction recorded",ms+" milliseconds. Try again to beat your time.",ms)}});
+ ctx.on(pad,"click",()=>{if(ctx.finished)return;if(state==="idle"){state="waiting";pad.className="reaction-pad waiting";title.textContent="Wait for it…";desc.textContent="Don't tap yet";ctx.after(()=>{state="ready";readyAt=ctx.now();pad.className="reaction-pad go";title.textContent="TAP!";desc.textContent="Now!"},1400+Math.random()*2300)}else if(state==="waiting"){state="done";pad.className="reaction-pad";ctx.finish(false,"Too soon!","You tapped before the light turned green.",null)}else if(state==="ready"){state="done";const ms=Math.round(ctx.now()-readyAt);pad.className="reaction-pad go";title.textContent=ms+"ms";ctx.finish(true,ms<250?"Lightning fast!":"Reaction recorded",ms+" milliseconds. Try again to beat your time.",ms)}});
 }
 function typing(ctx){
  const phrases=["A little progress every day goes a long way.","The quick brown fox jumps over the lazy dog.","Great games are made one small step at a time.","The stars are beautiful in the evening sky.","Practice makes progress, not perfection.","The best ideas often start with curiosity.","PixelPlay is a cozy corner for fun and games.","Never stop exploring and learning new things.","Every keystroke brings you closer to the goal."];
- let index=0,done=0,started=0,time=30,correct=0;
- const order=C.shuffle(phrases);
- ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Time <b id="typeTime">30s</b></span><span>Completed <b id="typeDone">0</b></span><span>Accuracy <b id="typeAccuracy">100%</b></span></div><div class="typing-quote" id="typeQuote"></div><input class="arcade-text-input typing-input" id="typeInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Type the shown sentence" placeholder="Start typing here…">'+resultStatus("Your 30-second timer begins with the first letter.")+'</div>');
- const input=$(ctx,"#typeInput"),q=$(ctx,"#typeQuote");
- function draw(){const target=order[index%order.length],value=input.value;q.textContent=target;const good=[...value].filter((c,i)=>c===target[i]).length;$(ctx,"#typeAccuracy").textContent=value.length?Math.round(100*good/value.length)+"%":"100%";$(ctx,"#typeDone").textContent=done}
- function finish(){const elapsed=(performance.now()-started)/60000||.5;const wpm=Math.round(correct/5/Math.max(elapsed,.01));ctx.finish(done>0,"Time's up!","You completed "+done+" sentences at approximately "+wpm+" WPM.",wpm)}
- ctx.on(input,"input",()=>{if(ctx.finished)return;if(!started){started=performance.now();ctx.every(()=>{time=Math.max(0,30-Math.floor((performance.now()-started)/1000));$(ctx,"#typeTime").textContent=time+"s";if(!time)finish()},160)}const target=order[index%order.length];if(input.value===target){correct+=target.length;done++;index++;input.value="";ctx.notice("Nice! Keep going.")}draw()});
+ let index=0,done=0,correct=0,previous="",attempts=0,mistakes=0;const started=ctx.now(),order=C.shuffle(phrases);
+ ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Time <b id="typeTime">30s</b></span><span>Completed <b id="typeDone">0</b></span><span>Accuracy <b id="typeAccuracy">100%</b></span></div><div class="typing-quote" id="typeQuote"></div><input class="arcade-text-input typing-input" id="typeInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Type the shown sentence" placeholder="Start typing here…">'+resultStatus("Type for 30 seconds. Correct characters in unfinished sentences count. Paste is disabled.")+'</div>');
+ const input=$(ctx,"#typeInput"),quote=$(ctx,"#typeQuote");
+ function draw(){quote.textContent=order[index%order.length];$(ctx,"#typeDone").textContent=done;$(ctx,"#typeAccuracy").textContent=(attempts?Math.round(100*(attempts-mistakes)/attempts):100)+"%"}
+ function finish(){const target=order[index%order.length],partial=[...input.value].filter((c,i)=>c===target[i]).length;const wpm=Math.round((correct+partial)/5/.5);input.disabled=true;ctx.finish(done>0||partial>0,"Sprint complete",wpm+" WPM · "+(attempts?Math.round(100*(attempts-mistakes)/attempts):100)+"% accuracy · "+done+" full sentences.",wpm)}
+ ctx.on(input,"input",()=>{
+  const target=order[index%order.length],value=input.value;let common=0;while(common<previous.length&&common<value.length&&previous[common]===value[common])common++;
+  for(let i=common;i<value.length;i++){attempts++;if(value[i]!==target[i])mistakes++}
+  previous=value;if(value===target){correct+=target.length;done++;index++;input.value="";previous="";ctx.notice("Sentence complete! Keep going.")}draw();
+ });
+ ctx.on(input,"paste",e=>{e.preventDefault();ctx.notice("Type the sentence yourself — paste is disabled for this sprint.")});
+ ctx.on(input,"drop",e=>e.preventDefault());
+ ctx.every(()=>{const left=Math.max(0,30-Math.floor((ctx.now()-started)/1000));$(ctx,"#typeTime").textContent=left+"s";if(!left)finish()},100);
  draw();
 }
 function whack(ctx){
- let target=-1,hits=0,misses=0,started=performance.now();
- ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Hits <b id="whackHits">0</b></span><span>Time <b id="whackTime">30s</b></span></div><div class="whack-grid" id="whackGrid">'+Array.from({length:9},(_,i)=>'<button type="button" class="whack-hole" data-i="'+i+'" aria-label="Hole '+(i+1)+'"><span>◯</span></button>').join("")+'</div>'+resultStatus("Tap the popping critter! Get 12 hits in 30 seconds.")+'</div>');
+ let target=-1,hits=0,misses=0;const started=ctx.now();
+ ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Hits <b id="whackHits">0</b></span><span>Misses <b id="whackMisses">0</b></span><span>Time <b id="whackTime">30s</b></span></div><div class="whack-grid" id="whackGrid">'+Array.from({length:9},(_,i)=>'<button type="button" class="whack-hole" data-i="'+i+'" aria-label="Hole '+(i+1)+'"><span>◯</span></button>').join("")+'</div>'+resultStatus("A full 30-second sprint. One attempt per flower. Empty holes count as misses.")+'</div>');
  const grid=$(ctx,"#whackGrid");
- function paint(){[...grid.children].forEach((b,i)=>{b.classList.toggle("active",i===target);b.querySelector("span").textContent=i===target?"✿":"◯"});$(ctx,"#whackHits").textContent=hits}
- ctx.on(grid,"click",e=>{const b=e.target.closest("[data-i]");if(!b||ctx.finished)return;let i=+b.dataset.i;if(i===target){hits++;target=-1;paint();if(hits>=12)ctx.finish(true,"Whack champion!","You landed 12 hits with "+Math.ceil(30-(performance.now()-started)/1000)+" seconds to spare.",hits)}else{misses++;ctx.notice("Miss! Aim for the flower.")}});
- ctx.every(()=>{if(ctx.finished)return;let i=Math.floor(Math.random()*9);target=i===target?(i+1)%9:i;paint()},620);
- ctx.every(()=>{const s=Math.max(0,30-Math.floor((performance.now()-started)/1000));$(ctx,"#whackTime").textContent=s+"s";if(!s)ctx.finish(false,"Time's up!","You scored "+hits+" hits. Get 12 to win.",hits)},170);
+ function paint(){[...grid.children].forEach((b,i)=>{b.classList.toggle("active",i===target);b.querySelector("span").textContent=i===target?"✿":"◯";b.setAttribute("aria-label","Hole "+(i+1)+(i===target?", flower":", empty"))});$(ctx,"#whackHits").textContent=hits;$(ctx,"#whackMisses").textContent=misses}
+ ctx.on(grid,"click",e=>{const b=e.target.closest("[data-i]");if(!b||target<0)return;if(+b.dataset.i===target)hits++;else misses++;target=-1;paint()});
+ function pop(){let next=Math.floor(Math.random()*9);target=next===target?(next+1)%9:next;paint();ctx.after(pop,Math.max(260,650-Math.floor((ctx.now()-started)/5000)*65))}
+ pop();ctx.every(()=>{const left=Math.max(0,30-Math.floor((ctx.now()-started)/1000));$(ctx,"#whackTime").textContent=left+"s";if(!left)ctx.finish(hits>=12,"Sprint complete",hits+" hits and "+misses+" misses in 30 seconds.",hits)},100);
 }
 function trivia(ctx){
  const questions=C.shuffle(C.QUESTIONS).slice(0,10);let index=0,score=0,locked=false;
@@ -55,10 +63,11 @@ function trivia(ctx){
  draw();
 }
 function math(ctx){
- let points=0,left=45,started=0,answer=0;
- ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Time <b id="mathTime">45s</b></span><span>Correct <b id="mathPoints">0 / 10</b></span></div><div class="math-question" id="mathQuestion"></div><form id="mathForm" class="arcade-form"><input id="mathAnswer" type="number" inputmode="numeric" required autocomplete="off" aria-label="Math answer" placeholder="Answer…"><button class="btn primary">Submit</button></form>'+resultStatus("Solve 10 questions before time runs out. Clock starts on your first answer.")+'</div>');
+ let points=0,misses=0,answer=0;const started=ctx.now();
+ ctx.screen('<div class="arcade-center"><div class="arcade-scoreline"><span>Time <b id="mathTime">45s</b></span><span>Correct <b id="mathPoints">0</b></span><span>Mistakes <b id="mathMisses">0</b></span></div><div class="math-question" id="mathQuestion"></div><form id="mathForm" class="arcade-form"><input id="mathAnswer" type="number" inputmode="numeric" required autocomplete="off" aria-label="Math answer" placeholder="Answer…"><button class="btn primary">Submit</button></form>'+resultStatus("Solve as many questions as you can in 45 seconds. There is no answer limit.")+'</div>');
  function question(){const op=Math.floor(Math.random()*3),a=2+Math.floor(Math.random()*18),b=2+Math.floor(Math.random()*12);if(op===0){answer=a+b;$(ctx,"#mathQuestion").textContent=a+" + "+b+" = ?"}else if(op===1){answer=a;$(ctx,"#mathQuestion").textContent=(a+b)+" − "+b+" = ?"}else{answer=a*b;$(ctx,"#mathQuestion").textContent=a+" × "+b+" = ?"}$(ctx,"#mathAnswer").value=""}
- ctx.on($(ctx,"#mathForm"),"submit",e=>{e.preventDefault();if(ctx.finished)return;if(!started){started=performance.now();ctx.every(()=>{left=Math.max(0,45-Math.floor((performance.now()-started)/1000));$(ctx,"#mathTime").textContent=left+"s";if(!left)ctx.finish(false,"Time's up!","You solved "+points+" of 10 questions.",points)},200)}const n=Number($(ctx,"#mathAnswer").value);if(n===answer){points++;ctx.notice("Correct!");$(ctx,"#mathPoints").textContent=points+" / 10";if(points===10){ctx.finish(true,"Math whiz!","Ten questions solved. Nice mental arithmetic.",points);return}question()}else{ctx.notice("Try again — check your arithmetic.");$(ctx,"#mathAnswer").select()}});
+ ctx.on($(ctx,"#mathForm"),"submit",e=>{e.preventDefault();const input=$(ctx,"#mathAnswer");if(!input.value.trim())return;if(Number(input.value)===answer){points++;$(ctx,"#mathPoints").textContent=points;ctx.notice("Correct!");question()}else{misses++;$(ctx,"#mathMisses").textContent=misses;ctx.notice("Try again — check your arithmetic.");input.select()}});
+ ctx.every(()=>{const left=Math.max(0,45-Math.floor((ctx.now()-started)/1000));$(ctx,"#mathTime").textContent=left+"s";if(!left)ctx.finish(points>=10,"Sprint complete",points+" correct answers and "+misses+" mistakes in 45 seconds.",points)},100);
  question();
 }
 function colors(ctx){
@@ -72,4 +81,5 @@ function colors(ctx){
 A.register("rps",rps);A.register("simon",simon);A.register("reaction",reaction);A.register("typing",typing);
 A.register("whack",whack);A.register("trivia",trivia);A.register("math",math);A.register("colors",colors);
 })();
+
 

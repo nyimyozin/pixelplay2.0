@@ -88,13 +88,49 @@ function floodMines(board,start,flags,revealed){
  while(queue.length){const i=queue.shift();if(out.has(i)||flags.has(i)||board.mines.has(i))continue;out.add(i);if(board.counts[i]===0)queue.push(...board.neighbors(i))}
  return out;
 }
+
+class PlayClock{
+ constructor(source=()=>performance.now()){this.source=source;this.reset()}
+ reset(){this.origin=this.source();this.totalPaused=0;this.pausedAt=null}
+ get paused(){return this.pausedAt!==null}
+ now(){return (this.pausedAt??this.source())-this.totalPaused}
+ elapsed(){return Math.max(0,this.now()-this.origin)}
+ pause(){if(!this.paused)this.pausedAt=this.source()}
+ resume(){if(this.paused){this.totalPaused+=this.source()-this.pausedAt;this.pausedAt=null}}
+}
+const SNAKE_STAGES=[0,10,25,50,100,200,300];
+function snakeStage(apples){const level=SNAKE_STAGES.filter(n=>apples>=n).length;return {level,interval:Math.max(70,180-(level-1)*17),next:SNAKE_STAGES[level]??397}}
+function snakeFood(body,size=20,random=Math.random){const occupied=new Set(body.map(p=>p.y*size+p.x)),free=[];for(let i=0;i<size*size;i++)if(!occupied.has(i))free.push(i);if(!free.length)return null;const i=free[Math.floor(random()*free.length)];return {x:i%size,y:Math.floor(i/size)}}
+function snakeStep(body,direction,food,size=20){
+ const head={x:body[0].x+direction.x,y:body[0].y+direction.y};
+ const eating=!!food&&head.x===food.x&&head.y===food.y;
+ const collisionBody=eating?body:body.slice(0,-1);
+ if(head.x<0||head.y<0||head.x>=size||head.y>=size||collisionBody.some(p=>p.x===head.x&&p.y===head.y))return {body,crashed:true,eating:false,complete:false};
+ const next=[head,...body];if(!eating)next.pop();
+ return {body:next,crashed:false,eating,complete:next.length===size*size};
+}
+function queueSnakeTurn(queue,direction,next){const last=queue.at(-1)||direction;if(queue.length>=2||last.x===next.x&&last.y===next.y||last.x===-next.x&&last.y===-next.y)return queue;return [...queue,next]}
+function sudokuSolutions(values,limit=2){
+ const board=[...values];
+ function visit(){let at=-1,choices=null;for(let i=0;i<81;i++)if(!board[i]){
+  const r=Math.floor(i/9),c=i%9,used=new Set();
+  for(let j=0;j<9;j++){used.add(board[r*9+j]);used.add(board[j*9+c]);used.add(board[(Math.floor(r/3)*3+Math.floor(j/3))*9+Math.floor(c/3)*3+j%3])}
+  const options=[1,2,3,4,5,6,7,8,9].filter(n=>!used.has(n));if(!options.length)return 0;
+  if(!choices||options.length<choices.length){at=i;choices=options;if(options.length===1)break}
+ }
+ if(at<0)return 1;let count=0;for(const n of choices){board[at]=n;count+=visit();if(count>=limit)break}board[at]=0;return count;
+ }
+ return visit();
+}
+
 function sudokuGame(random=Math.random,clues=42){
  const base=(r,c)=>(r*3+Math.floor(r/3)+c)%9+1;
  function order(){const groups=shuffle([0,1,2],random);return groups.flatMap(g=>shuffle([0,1,2],random).map(n=>g*3+n))}
  const rows=order(),cols=order(),digits=shuffle([1,2,3,4,5,6,7,8,9],random);
  const solution=Array.from({length:81},(_,i)=>digits[base(rows[Math.floor(i/9)],cols[i%9])-1]);
- const indices=shuffle(Array.from({length:81},(_,i)=>i),random),givens=Array(81).fill(0);
- for(const i of indices.slice(0,Math.max(17,Math.min(81,clues))))givens[i]=solution[i];
+ const indices=shuffle(Array.from({length:81},(_,i)=>i),random),givens=[...solution];
+ let remaining=81;const target=Math.max(30,Math.min(81,clues));
+ for(const i of indices){if(remaining<=target)break;const digit=givens[i];givens[i]=0;if(sudokuSolutions(givens)===1)remaining--;else givens[i]=digit;}
  return {solution,givens};
 }
 const QUESTIONS=[
@@ -119,7 +155,8 @@ const QUESTIONS=[
  ["Which of these is a mammal?",["Shark","Dolphin","Octopus","Trout"],1],
  ["Who wrote Romeo and Juliet?",["Shakespeare","Dickens","Austen","Tolkien"],0]
 ];
-const API={CATALOG,QUESTIONS,shuffle,tttWinner,tttCpu,connectWinner,connectDrop,cpuConnect,slide2048,canMove2048,createMines,floodMines,sudokuGame};
+const API={PlayClock,snakeStage,snakeFood,snakeStep,queueSnakeTurn,sudokuSolutions,CATALOG,QUESTIONS,shuffle,tttWinner,tttCpu,connectWinner,connectDrop,cpuConnect,slide2048,canMove2048,createMines,floodMines,sudokuGame};
 if(typeof module!=="undefined"&&module.exports)module.exports=API;
 root.ArcadeCore=API;
 })(typeof window!=="undefined"?window:globalThis);
+

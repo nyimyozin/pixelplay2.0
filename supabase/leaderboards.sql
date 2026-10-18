@@ -30,6 +30,18 @@ insert into pixelplay_private.rules values
 ('whack',false,12),
 ('rps',false,5),
 ('guess',true,7);
+alter table pixelplay_private.rules add column if not exists allowed_modes text[] not null default array['standard'];
+update pixelplay_private.rules set allowed_modes=array['easy','medium','hard'] where game_id in ('hangman','memory');
+update pixelplay_private.rules set max_score=10000000,allowed_modes=array['standard','endless'] where game_id='2048';
+update pixelplay_private.rules set max_score=397,allowed_modes=array['standard','marathon'] where game_id='snake';
+update pixelplay_private.rules set max_score=1000000000,allowed_modes=array['standard','marathon'] where game_id='tetris';
+update pixelplay_private.rules set max_score=1000000,allowed_modes=array['standard','waves'] where game_id='breakout';
+update pixelplay_private.rules set max_score=1000000,allowed_modes=array['standard','endless'] where game_id='flappy';
+update pixelplay_private.rules set max_score=1000,allowed_modes=array['standard','endless'] where game_id='simon';
+update pixelplay_private.rules set max_score=500,allowed_modes=array['standard','sprint'] where game_id='whack';
+update pixelplay_private.rules set max_score=10000,allowed_modes=array['standard','sprint'] where game_id='math';
+update pixelplay_private.rules set max_score=1000,allowed_modes=array['standard','sprint'] where game_id='typing';
+update pixelplay_private.rules set max_score=86400,allowed_modes=array['standard','casual'] where game_id='tictactoe';
 create table pixelplay_private.results (
  player_id uuid not null references auth.users(id) on delete cascade,
  game_id text not null references pixelplay_private.rules(game_id),
@@ -39,8 +51,7 @@ create table pixelplay_private.results (
  duration_ms integer not null check(duration_ms between 1 and 86400000),
  achieved_at timestamptz not null default clock_timestamp(),
  primary key(player_id,game_id,mode),
- check ((game_id in ('hangman','memory') and mode in ('easy','medium','hard'))
-    or (game_id not in ('hangman','memory') and mode='standard'))
+ constraint results_mode_check check ((game_id in ('hangman','memory') and mode in ('easy','medium','hard')) or (game_id not in ('hangman','memory') and mode='standard') or (game_id='2048' and mode='endless') or (game_id='snake' and mode='marathon') or (game_id='tetris' and mode='marathon') or (game_id='breakout' and mode='waves') or (game_id='flappy' and mode='endless') or (game_id='simon' and mode='endless') or (game_id='whack' and mode='sprint') or (game_id='math' and mode='sprint') or (game_id='typing' and mode='sprint') or (game_id='tictactoe' and mode='casual'))
 );
 create index results_board on pixelplay_private.results(game_id,mode,score,duration_ms,achieved_at);
 create table pixelplay_private.cooldowns (
@@ -63,10 +74,7 @@ begin
  if uid is null then raise exception 'Sign in before submitting'; end if;
  select * into rule from pixelplay_private.rules where game_id=p_game;
  if not found then raise exception 'Unknown game'; end if;
- if p_mode is null or not (
-  (p_game in ('hangman','memory') and p_mode in ('easy','medium','hard'))
-  or (p_game not in ('hangman','memory') and p_mode='standard')
- ) then raise exception 'Invalid difficulty'; end if;
+ if p_mode is null or not (p_mode=any(rule.allowed_modes)) then raise exception 'Invalid game mode or difficulty'; end if;
  if p_name is null or char_length(btrim(p_name)) not between 2 and 24
     or p_name ~ '[[:cntrl:]]' then raise exception 'Use a name with 2–24 characters'; end if;
  if p_score is null or p_score::text in ('NaN','Infinity','-Infinity')
@@ -108,4 +116,5 @@ $$;
 revoke all on function public.pixelplay_top(text,text) from public, anon, authenticated;
 grant execute on function public.pixelplay_top(text,text) to anon, authenticated;
 commit;
+
 
