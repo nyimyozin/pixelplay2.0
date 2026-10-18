@@ -32,10 +32,6 @@ node --check engine.js
 node --check app.js
 ```
 
-## Deploy
-
-GitHub Pages: **Settings → Pages → Deploy from a branch → main → /(root)**. After Pages is enabled, the site will be at `https://nyimyozin.github.io/pixelplay2.0/`.
-
 ## Project structure
 
 - `index.html` — semantic HTML shell and metadata
