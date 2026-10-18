@@ -4,13 +4,26 @@ const engine = require("../engine.js");
 
 test("all hangman word lists are lowercase alphabetical with valid metadata", () => {
   for (const [difficulty, words] of Object.entries(engine.WORDS)) {
-    assert.ok(words.length >= 15, `${difficulty} has enough words`);
+    assert.equal(words.length, 60, `${difficulty} has 60 curated words`);
     for (const [word, hint, category] of words) {
       assert.match(word, /^[a-z]+$/);
       assert.ok(hint.length > 5);
       assert.ok(category.length > 2);
     }
     assert.equal(new Set(words.map(row => row[0])).size, words.length);
+  }
+});
+
+test("expanded hangman bank has distinct words across difficulties and accessible easy words", () => {
+  const words = Object.values(engine.WORDS).flat().map(row => row[0]);
+  assert.equal(words.length, 180);
+  assert.equal(new Set(words).size, words.length);
+  assert.ok(engine.WORDS.easy.every(([word]) => word.length <= 5));
+  for (const difficulty of Object.keys(engine.WORDS)) {
+    const last = engine.WORDS[difficulty].at(-1);
+    assert.equal(engine.pickWord(difficulty, "", () => 0.999999).word, last[0]);
+    const other = engine.pickWord(difficulty, last[0], () => 0.999999);
+    assert.notEqual(other.word, last[0]);
   }
 });
 
@@ -50,3 +63,4 @@ test("shuffle preserves all items and uses supplied randomness", () => {
   assert.notStrictEqual(values, result);
   assert.deepEqual(values, [1, 2, 3, 4]);
 });
+
