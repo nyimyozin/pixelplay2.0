@@ -7,4 +7,4 @@
 .leaderboard-submit{display:grid;gap:12px;border-top:1px solid #8885;margin-top:20px;padding-top:16px}.leaderboard-submit label{display:grid;gap:8px}
 .leaderboard-submit input{padding:12px;border:1px solid #8886;background:transparent;color:inherit;border-radius:12px;font:inherit}.leaderboard-submit p{font-size:.9rem;line-height:1.5}
 .leaderboard-dialog button:focus-visible,.leaderboard-dialog input:focus-visible,.leaderboard-dialog select:focus-visible{outline:3px solid #8b7fff;outline-offset:3px}
-@media(max-width:600px){.topbar{flex-wrap:wrap}.nav{flex-wrap:wrap}.leaderboard-dialog{padding:20px}.leaderboard-list td,.leaderboard-list th{padding:10px 4px}}
+@media(max-width:600px){.leaderboard-dialog{padding:20px}.leaderboard-list td,.leaderboard-list th{padding:10px 4px}}
