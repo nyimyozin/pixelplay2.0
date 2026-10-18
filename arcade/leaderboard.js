@@ -17,6 +17,8 @@ function button(text,handler){const b=document.createElement("button");b.type="b
 function text(tag,value){const el=document.createElement(tag);el.textContent=value;return el}
 function readName(){try{return localStorage.getItem("pixelplay2.playerName")||""}catch{return ""}}
 function show(game="hangman",mode=null,entry=null){
+ window.PixelArcade?.active?.pause("Leaderboards opened — resume when you return to the game.");
+ document.dispatchEvent?.(new Event("pixelplay:leaderboard-open"));
  const previous=document.querySelector("#leaderboardDialog");if(previous)previous.close();
  const modal=document.createElement("dialog");modal.id="leaderboardDialog";modal.className="leaderboard-dialog glass";modal.setAttribute("aria-labelledby","leaderboardTitle");
  const heading=text("h2","Global leaderboards");heading.id="leaderboardTitle";modal.append(heading);
@@ -53,4 +55,3 @@ function show(game="hangman",mode=null,entry=null){
 function offer(container,entry,game="hangman",mode="standard"){if(container)container.append(button(entry?"🏆 Submit & view leaderboard":"🏆 View leaderboard",()=>show(entry?.game_id||game,entry?.mode||mode,entry)))}
 window.PixelLeaderboard={show,offer,result:R.result};
 })();
-

@@ -38,6 +38,7 @@ function flip(index){const m=memoryState;if(route!=="memory"||m.done||m.paused||
 function togglePause(){const m=memoryState;if(!m.started||m.done)return;if(!m.paused){m.elapsedMs=memoryElapsed();m.remaining=Math.max(0,Math.ceil(m.seconds-m.elapsedMs/1000));m.paused=true;clearInterval(m.timer);m.timer=null;document.getElementById("memoryGrid").style.visibility="hidden";document.getElementById("memoryStatus").textContent="Paused. Cards are hidden."}else{m.started=performance.now();m.paused=false;m.timer=setInterval(tick,200);document.getElementById("memoryGrid").style.visibility="visible";document.getElementById("memoryStatus").textContent="Back in the game!"}renderMemory()}
 function endMemory(won){const m=memoryState;if(m.done)return;m.elapsedMs=memoryElapsed();m.done=true;stopTimers();m.remaining=Math.max(0,Math.ceil(m.seconds-m.elapsedMs/1000));record("memory",won);if(won){const elapsed=Number((m.elapsedMs/1000).toFixed(2));stats.memory.bestTime=stats.memory.bestTime===null?elapsed:Math.min(stats.memory.bestTime,elapsed);persist()}renderMemory();showDialog(won,won?"All matched!":"Time's up!",won?`You found every pair in ${m.moves} moves with ${m.remaining}s to spare.`:`You found ${m.matched.size} of ${configs[m.difficulty].pairs} pairs. Try again!`,newMemory)}
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&route==="memory"&&memoryState.started&&!memoryState.done&&!memoryState.paused)togglePause()});
+document.addEventListener("pixelplay:leaderboard-open",()=>{if(route==="memory"&&memoryState.started&&!memoryState.done&&!memoryState.paused)togglePause()});
 document.getElementById("leaderboardBtn").addEventListener("click",()=>window.PixelLeaderboard.show());
 const categoryMenu=document.getElementById("categoryMenu");
 document.getElementById("surpriseBtn").addEventListener("click",()=>{const options=window.ArcadeCore.CATALOG.filter(game=>game.link!==location.hash);const game=options[Math.floor(Math.random()*options.length)];categoryMenu.open=false;location.hash=game.link});
@@ -45,4 +46,3 @@ document.addEventListener("click",event=>{if(!categoryMenu.contains(event.target
 document.addEventListener("keydown",event=>{if(event.key==="Escape"&&categoryMenu.open){categoryMenu.open=false;categoryMenu.querySelector("summary").focus()}});
 navigate();
 })();
-

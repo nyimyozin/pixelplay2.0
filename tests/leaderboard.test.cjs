@@ -68,3 +68,9 @@ test('submission failure permits retry and keeps the result available',async()=>
  assert.equal(form.children[2].disabled,false);assert.match(form.children[4].textContent,/try again/);
  failed=false;await form.events.submit({preventDefault(){}});assert.equal(form.children[2].textContent,'Submitted');
 });
+
+test('opening rankings pauses an active game before showing the modal',async()=>{
+ let pauses=0;const {window}=ui(async()=>({data:[]}));
+ window.PixelArcade={active:{pause(){pauses++}}};
+ window.PixelLeaderboard.show('snake');await tick();assert.equal(pauses,1);
+});
