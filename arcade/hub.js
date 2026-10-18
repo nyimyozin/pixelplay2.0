@@ -62,5 +62,5 @@ function mount(app,id){
  restart.addEventListener("click",restartHandler);allDisposers.push(()=>restart.removeEventListener("click",restartHandler));
  active=ctx;ctx.start();
 }
-window.PixelArcade={catalog,register,mount,clear,get active(){return active}};
+window.PixelArcade={catalog,register,mount,clear,totals(){const values=Object.values(readStats());return {played:values.reduce((n,s)=>n+(s.played||0),0),wins:values.reduce((n,s)=>n+(s.wins||0),0)}},get active(){return active}};
 })();
