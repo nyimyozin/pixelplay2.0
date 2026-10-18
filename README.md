@@ -1,46 +1,65 @@
-# [PixelPlay 2.0](https://nyimyozin.github.io/pixelplay2.0/)
+# PixelPlay 2.0
 
-A polished, self-contained mini-game arcade rebuilt from [the original PixelPlay](https://github.com/nyimyozin/pixelplay).
+**24 games in one tiny, friendly browser arcade.** A modern, liquid-glass overhaul of [PixelPlay](https://github.com/nyimyozin/pixelplay), keeping the original repository untouched.
 
-**Play Hangman and Memory Match** in a responsive, liquid-glass UI. No frameworks, CDNs, tracking, build tools, or dependencies required.
+**[Play online](https://nyimyozin.github.io/pixelplay2.0/)**
+
+## Game collection
+
+| Category | Games |
+| --- | --- |
+| Arcade | Snake, Block Drop, Pong, Breakout, Sky Hop |
+| Puzzle | Memory Match, 2048, Minesweeper, Sudoku, 15 Puzzle, Lights Out, Number Hunt |
+| Strategy | Tic-Tac-Toe (CPU), Connect Four (CPU), Rock Paper Scissors |
+| Words | Hangman, Word Scramble, Typing Sprint |
+| Quiz | Trivia Quiz, Math Sprint, Color Clash |
+| Reflex | Simon Says, Reaction Time, Whack-a-Mole |
 
 ## Features
 
-- Two fully playable games with redesigned interfaces
-- Frosted liquid-glass visuals, responsive layouts, and light/dark mode
-- Three difficulty levels per game
-- Mouse, touch, and keyboard support (including physical-keyboard Hangman)
-- Accessible controls, visible focus rings, and reduced-motion support
-- Locally saved wins, streaks, and best Memory times
-- Improved shuffling, timer accuracy, and game-reset logic
-- Fully static: works on GitHub Pages or any web server
+- All 24 games are playable without accounts, downloads, servers, or game libraries.
+- Search the catalogue and filter by game category.
+- Responsive controls for touchscreen, mouse, and keyboard. Action games use lightweight HTML canvas.
+- Light/dark themes, responsive frosted-glass design, and reduced-motion preferences.
+- Improved original Hangman and Memory Match, each with three difficulty levels.
+- Automatic results saved in local storage; nothing sent to a server.
+- Static hosting works on GitHub Pages, and deep links use URL fragments.
 
-## Run locally
+## Run
 
-Open `index.html` in a modern browser. No installation necessary. The website uses hash-based navigation, so deep links work on GitHub Pages:
+Clone the repository and open `index.html` in a modern browser. For development, a local HTTP server is recommended:
 
-- `index.html#/hangman`
-- `index.html#/memory`
+```sh
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
 
 ## Test
 
-With Node.js 18+:
+With Node.js 18 or newer:
 
-```bash
-node --test tests/engine.test.cjs
-node --check engine.js
+```sh
 node --check app.js
+node --check arcade/core.js
+node --check arcade/hub.js
+node --check arcade/puzzles.js
+node --check arcade/quick.js
+node --check arcade/action.js
+node --test tests/*.test.cjs
 ```
 
-## Project structure
+The GitHub Actions validation workflow automatically runs syntax checks and unit tests on every push.
 
-- `index.html` — semantic HTML shell and metadata
-- `styles.css` — responsive liquid-glass design system
-- `engine.js` — pure game helpers and word decks, testable in Node
-- `app.js` — routing, presentation, interactions, persistence, and games
-- `favicon.svg` — custom PixelPlay app icon
-- `tests/engine.test.cjs` — lightweight unit tests
+## Architecture
 
-## Credits
+- `index.html` + `styles.css`: static layout and shared design
+- `engine.js` + `app.js`: original Hangman and Memory Match
+- `arcade/core.js`: catalogue metadata, puzzles, deterministic rule helpers
+- `arcade/hub.js`: discovery catalogue, routing, lifecycle, local statistics
+- `arcade/puzzles.js`: puzzles and strategy games
+- `arcade/quick.js`: word, quiz, and reflex games
+- `arcade/action.js`: canvas arcade games
+- `arcade/styles.css`: game tiles, boards, touch controls and responsive styles
 
-Built as a redesign of Nick's original [PixelPlay](https://github.com/nyimyozin/pixelplay) (Hangman + Memory Game). The original repository was not changed. This version retains the gameplay concepts while replacing the front-end code and graphics.
+The original [PixelPlay](https://github.com/nyimyozin/pixelplay) remains unchanged. PixelPlay 2.0 is a separate redesign.
