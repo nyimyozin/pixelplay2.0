@@ -45,15 +45,16 @@ function mount(app,id){
   notice(text){const el=body.querySelector(".arcade-status");if(el)el.textContent=text},
   start(){
    for(const fn of roundDisposers.splice(0))fn();
-   ctx.finished=false;
+   ctx.finished=false;ctx.startedAt=performance.now();
    registry.get(id)(ctx);
   },
-  finish(won,headline,detail){
+  finish(won,headline,detail,score=null){
    if(disposed||ctx.finished)return;
    ctx.finished=true;record(id,won);
    body.insertAdjacentHTML("beforeend",'<div class="arcade-end" role="status"><div class="arcade-result glass"><div class="arcade-result-symbol">'+(won?"✦":"↻")+'</div><h2></h2><p></p><div class="button-row"><button class="btn primary arcade-again" type="button">Play again ↻</button><a class="btn ghost" href="#/">All games</a></div></div></div>');
    const result=body.querySelector(".arcade-result");result.querySelector("h2").textContent=headline;result.querySelector("p").textContent=detail;
    result.querySelector(".arcade-again").addEventListener("click",()=>ctx.start());
+   window.PixelLeaderboard.offer(result.querySelector(".button-row"),window.PixelLeaderboard.result(id,won,score,performance.now()-ctx.startedAt),id);
    result.querySelector(".arcade-again").focus();
   },
   dispose(){if(disposed)return;disposed=true;for(const fn of roundDisposers.splice(0))fn();for(const fn of allDisposers.splice(0))fn()}
@@ -64,3 +65,4 @@ function mount(app,id){
 }
 window.PixelArcade={catalog,register,mount,clear,totals(){const values=Object.values(readStats());return {played:values.reduce((n,s)=>n+(s.played||0),0),wins:values.reduce((n,s)=>n+(s.wins||0),0)}},get active(){return active}};
 })();
+

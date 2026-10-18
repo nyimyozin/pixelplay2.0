@@ -22,8 +22,13 @@
 - Responsive controls for touchscreen, mouse, and keyboard. Action games use lightweight HTML canvas.
 - Light/dark themes, responsive frosted-glass design, and reduced-motion preferences.
 - Improved original Hangman and Memory Match, each with three difficulty levels.
-- Automatic results saved in local storage; nothing sent to a server.
+- Automatic personal stats saved locally; optional global leaderboard submissions use Supabase.
+- Per-game top-20 leaderboards, public player names, personal bests and separate difficulty boards.
 - Static hosting works on GitHub Pages, and deep links use URL fragments.
+
+## Global leaderboards
+
+The interface and game integrations are included. To activate shared online rankings, follow [the Supabase setup guide](supabase/README.md) and fill in `leaderboard-config.js`. Games remain playable while the service is unconfigured.
 
 ## Run
 
@@ -41,6 +46,9 @@ With Node.js 18 or newer:
 
 ```sh
 node --check app.js
+node --check leaderboard-config.js
+node --check arcade/leaderboard-rules.js
+node --check arcade/leaderboard.js
 node --check arcade/core.js
 node --check arcade/hub.js
 node --check arcade/puzzles.js
@@ -55,6 +63,8 @@ The GitHub Actions validation workflow automatically runs syntax checks and unit
 
 - `index.html` + `styles.css`: static layout and shared design
 - `engine.js` + `app.js`: original Hangman and Memory Match
+- `arcade/leaderboard.js` + `arcade/leaderboard-rules.js`: shared rankings and game-specific result rules
+- `supabase/leaderboards.sql`: database tables and restricted read/submit APIs
 - `arcade/core.js`: catalogue metadata, puzzles, deterministic rule helpers
 - `arcade/hub.js`: discovery catalogue, routing, lifecycle, local statistics
 - `arcade/puzzles.js`: puzzles and strategy games
@@ -63,3 +73,4 @@ The GitHub Actions validation workflow automatically runs syntax checks and unit
 - `arcade/styles.css`: game tiles, boards, touch controls and responsive styles
 
 The original [PixelPlay](https://github.com/nyimyozin/pixelplay) remains unchanged. PixelPlay 2.0 is a separate redesign.
+
