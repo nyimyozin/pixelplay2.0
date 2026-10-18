@@ -1,6 +1,6 @@
 # PixelPlay 2.0
 
-**24 games in one tiny, friendly browser arcade.** A modern, liquid-glass overhaul of [PixelPlay](https://github.com/nyimyozin/pixelplay), keeping the original repository untouched.
+**24 games in one tiny, friendly browser arcade.** A modern overhaul of [PixelPlay](https://github.com/nyimyozin/pixelplay), keeping the original repository untouched.
 
 **[Play online](https://nyimyozin.github.io/pixelplay2.0/)**
 
