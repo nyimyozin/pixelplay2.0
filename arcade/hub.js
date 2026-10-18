@@ -5,11 +5,11 @@ let active=null;
 const categories=["All","Arcade","Puzzle","Strategy","Words","Quiz","Reflex"];
 function readStats(){try{return JSON.parse(localStorage.getItem("pixelplay2.arcade.stats"))||{}}catch{return {}}}
 function record(id,won){const stats=readStats(),s=stats[id]||{played:0,wins:0};s.played++;if(won)s.wins++;stats[id]=s;try{localStorage.setItem("pixelplay2.arcade.stats",JSON.stringify(stats))}catch{}}
-function catalog(element){
+function catalog(element,category="All"){
  if(!element)return;
  element.innerHTML='<section class="arcade-library" aria-label="More games"><div class="arcade-section-heading"><div><span class="eyebrow">THE WHOLE ARCADE</span><h2>Find your next favorite</h2><p>Quick games, brain teasers, and old-school favorites — play in your browser.</p></div><span class="arcade-count">'+core.CATALOG.length+' playable games</span></div><div class="arcade-toolbar glass"><label class="arcade-search"><span aria-hidden="true">⌕</span><input id="arcadeSearch" type="search" placeholder="Search games…" aria-label="Search games"></label><div class="arcade-filters" id="arcadeFilters" aria-label="Filter games by category"></div></div><div id="arcadeResults" class="arcade-cards"></div><p class="arcade-empty" id="arcadeEmpty" hidden>No games found. Try a different search or category.</p></section>';
  const filters=element.querySelector("#arcadeFilters"),results=element.querySelector("#arcadeResults"),search=element.querySelector("#arcadeSearch"),empty=element.querySelector("#arcadeEmpty");
- let selected="All";
+ let selected=categories.includes(category)?category:"All";
  filters.innerHTML=categories.map(c=>'<button class="arcade-filter'+(c===selected?" is-active":"")+'" type="button" data-filter="'+c+'" aria-pressed="'+(c===selected)+'">'+c+'</button>').join("");
  function draw(){
   const query=search.value.toLowerCase().trim();
