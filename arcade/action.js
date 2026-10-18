@@ -8,10 +8,10 @@ function shell(ctx,width,height,details,controls=""){
  const el=$(ctx,"#playCanvas"),g=el.getContext("2d");if(!g){ctx.notice("This browser does not support canvas.");return null}
  return {el,g,score:t=>$(ctx,"#arcadeLiveScore").textContent=t,extra:t=>$(ctx,"#arcadeLiveExtra").textContent=t};
 }
-function pad(directions){return '<div class="arcade-choices arcade-touch-controls">'+directions.map(([text,id])=>'<button class="arcade-choice" type="button" data-control="'+id+'" aria-label="'+id+'">'+text+'</button>').join("")+'</div>'}
+function pad(directions,layout=""){return '<div class="arcade-choices arcade-touch-controls '+layout+'" role="group" aria-label="Game controls">'+directions.map(([text,id])=>'<button class="arcade-choice" type="button" data-control="'+id+'" aria-label="'+id+'">'+text+'</button>').join("")+'</div>'}
 function rounded(g,x,y,w,h,fill,r=6){g.fillStyle=fill;g.beginPath();g.roundRect(x,y,w,h,r);g.fill()}
 function snake(ctx){
- const c=shell(ctx,400,400,"Arrow keys, swipe, or use the controls. Reach 15 apples to win.",pad([["↑","up"],["←","left"],["↓","down"],["→","right"]]));
+ const c=shell(ctx,400,400,"Arrow keys, swipe, or use the controls. Reach 15 apples to win.",pad([["↑","up"],["←","left"],["↓","down"],["→","right"]],"snake-arrow-pad"));
  if(!c)return;const {g,el}=c;const size=20;let snake=[{x:9,y:10},{x:8,y:10},{x:7,y:10}],dir={x:1,y:0},next={x:1,y:0},food,score=0,previous=0,acc=0;
  function newFood(){const free=[];for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!snake.some(s=>s.x===x&&s.y===y))free.push({x,y});food=free[rand(free.length)]}
  function change(v){const dirs={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};const d=dirs[v];if(d&&!(d.x===-dir.x&&d.y===-dir.y))next=d}

@@ -13,3 +13,12 @@
 .arcade-canvas{display:block;width:auto;height:auto;max-width:100%;max-height:min(72vh,610px);object-fit:contain;background:#111b32;border:1px solid var(--border);border-radius:17px;margin:0 auto;touch-action:none;box-shadow:inset 0 2px 15px rgba(0,0,0,.15)}.arcade-touch-controls .arcade-choice{min-width:56px;padding:10px 13px}.arcade-game-shell:has(.arcade-canvas){max-width:850px;margin-left:auto;margin-right:auto}
 @media(max-width:900px){.arcade-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:630px){.arcade-cards{grid-template-columns:1fr}.arcade-section-heading{align-items:start;flex-direction:column}.arcade-toolbar{padding:13px}.arcade-game-shell{padding:14px 12px 23px;border-radius:22px}.arcade-game-title h1{font-size:3rem}.arcade-card{min-height:120px}.arcade-card-art{height:75px;width:75px}.arcade-scoreline{font-size:12px;gap:10px}.arcade-choices{gap:7px}.arcade-choice{padding:11px 12px}.sudoku-keys .arcade-choice{min-width:38px;padding:9px}.arcade-bottom{flex-direction:column;align-items:start}.arcade-grid{gap:5px}.connect-board{padding:9px;gap:4px}.mines-grid{gap:3px}.mine-cell{border-radius:5px}.arcade-form input{width:175px}.rps-choice{font-size:15px}.quiz-choices{gap:8px}.quiz-choices .arcade-choice{padding:12px;font-size:13px}.arcade-canvas{max-height:65vh}}
 @media(prefers-reduced-motion:reduce){.arcade-card,.arcade-choice,.simon-pad{transition:none!important}}
+
+/* Snake controls mirror the inverted-T arrangement of keyboard arrow keys. */
+.snake-arrow-pad{display:grid;grid-template-areas:". up ." "left down right";grid-template-columns:repeat(3,60px);grid-template-rows:repeat(2,56px);gap:8px;width:max-content;max-width:100%;margin:18px auto}
+.snake-arrow-pad [data-control="up"]{grid-area:up}
+.snake-arrow-pad [data-control="left"]{grid-area:left}
+.snake-arrow-pad [data-control="down"]{grid-area:down}
+.snake-arrow-pad [data-control="right"]{grid-area:right}
+.snake-arrow-pad .arcade-choice{min-width:0;width:100%;height:100%;padding:0;font-size:25px;line-height:1;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.snake-arrow-pad .arcade-choice:active{transform:scale(.94);background:rgba(151,137,242,.35)}
